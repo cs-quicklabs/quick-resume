@@ -2,11 +2,11 @@ import { cn } from "@/lib/utils"
 
 function FormWrapper({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <div className="bg-background w-full">
+    <div className="bg-background w-full min-h-screen flex items-center justify-center">
       <div
         data-slot="form-wrapper"
         className={cn(
-          "mx-auto grid min-h-screen w-full max-w-5xl min-w-0 content-center items-start gap-8 p-4 pt-2 sm:gap-12 sm:p-6 md:grid-cols-2 md:gap-8 lg:p-12 2xl:max-w-6xl",
+          "w-full max-w-2xl px-4 sm:px-6 lg:px-8",
           className
         )}
         {...props}
