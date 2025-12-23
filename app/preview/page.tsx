@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Resume } from "@/app/lib/types/resume";
+import React, { useEffect, useState } from "react";
+import { Resume, Blog } from "@/app/lib/types/resume";
 import { Button } from "@/components/ui/button";
 
 export default function PreviewPage() {
@@ -10,7 +10,7 @@ export default function PreviewPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // Get resume data from sessionStorage
+    // Get resume data.
     try {
       const resumeData = sessionStorage.getItem("resumeData");
       if (resumeData) {
@@ -58,15 +58,9 @@ export default function PreviewPage() {
     return start || end || "";
   };
 
-  const formatEducationDate = (startYear?: string, completionYear?: string) => {
-    if (!startYear && !completionYear) return "";
-    if (startYear && completionYear) return `${startYear} - ${completionYear}`;
-    return completionYear || startYear || "";
-  };
 
   return (
     <>
-      {/* Print styles */}
       <style jsx global>{`
         @media print {
           @page {
@@ -123,7 +117,7 @@ export default function PreviewPage() {
               margin: "0 auto",
               backgroundColor: "#ffffff",
               fontFamily: "Helvetica, Arial, sans-serif",
-              fontSize: "10pt",
+              fontSize: "11pt",
               lineHeight: "1.5",
               color: "#000000",
             }}
@@ -139,7 +133,7 @@ export default function PreviewPage() {
                 </div>
               )}
               {resume.personalInfo.company && (
-                <div style={{ fontSize: "10pt", color: "#555555" }}>
+                <div style={{ fontSize: "11pt", color: "#555555" }}>
                   <strong>{resume.personalInfo.company}</strong>
                 </div>
               )}
@@ -151,7 +145,7 @@ export default function PreviewPage() {
                 <div style={{ fontSize: "12pt", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 4mm 0", paddingBottom: "2mm", borderBottom: "1px solid #000000" }}>
                   OBJECTIVE
                 </div>
-                <p style={{ fontSize: "10pt", lineHeight: "1.6", textAlign: "justify", margin: "0", color: "#000000" }}>
+                <p style={{ fontSize: "11pt", lineHeight: "1.6", textAlign: "justify", margin: "0", color: "#000000" }}>
                   {resume.objective}
                 </p>
               </div>
@@ -165,7 +159,7 @@ export default function PreviewPage() {
                 </div>
                 <ul style={{ listStyle: "none", padding: "0", margin: "0" }}>
                   {resume.summary.map((item, index) => (
-                    <li key={index} style={{ fontSize: "10pt", lineHeight: "1.6", marginBottom: "2mm", paddingLeft: "5mm", position: "relative", color: "#000000" }}>
+                    <li key={index} style={{ fontSize: "11pt", lineHeight: "1.6", marginBottom: "2mm", paddingLeft: "5mm", position: "relative", color: "#000000" }}>
                       <span style={{ position: "absolute", left: "0" }}>•</span>
                       {item}
                     </li>
@@ -180,28 +174,30 @@ export default function PreviewPage() {
                 <div style={{ fontSize: "12pt", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 4mm 0", paddingBottom: "2mm", borderBottom: "1px solid #000000" }}>
                   TECHNICAL SKILLS
                 </div>
-                <table style={{ width: "100%", borderCollapse: "collapse", margin: "0" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", margin: "0", border: "1px solid #000000" }}>
                   <thead>
                     <tr>
-                      <th style={{ fontSize: "10pt", fontWeight: "bold", textAlign: "left", padding: "2mm", borderBottom: "1px solid #000000", color: "#000000" }}>
+                      <th style={{ fontSize: "11pt", fontWeight: "bold", textAlign: "left", padding: "2mm", borderBottom: "1px solid #000000", borderRight: "1px solid #000000", borderTop: "1px solid #000000", borderLeft: "1px solid #000000", color: "#000000", width: "30%" }}>
                         Skill Category
                       </th>
-                      <th style={{ fontSize: "10pt", fontWeight: "bold", textAlign: "left", padding: "2mm", borderBottom: "1px solid #000000", color: "#000000" }}>
+                      <th style={{ fontSize: "11pt", fontWeight: "bold", textAlign: "left", padding: "2mm", borderBottom: "1px solid #000000", borderTop: "1px solid #000000", borderRight: "1px solid #000000", color: "#000000", width: "70%" }}>
                         Skills/Tools
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {Object.entries(resume.technicalSkills).map(([category, skills], index) => (
-                      <tr key={index}>
-                        <td style={{ fontSize: "10pt", padding: "2mm", borderBottom: "1px solid #dddddd", color: "#000000" }}>
-                          {category}
-                        </td>
-                        <td style={{ fontSize: "10pt", padding: "2mm", borderBottom: "1px solid #dddddd", color: "#000000" }}>
-                          {skills.join(", ")}
-                        </td>
-                      </tr>
-                    ))}
+                    {Object.entries(resume.technicalSkills).map(([category, skills], index) => {
+                      return (
+                        <tr key={index}>
+                          <td style={{ fontSize: "11pt", padding: "2mm", borderBottom: "1px solid #000000", borderRight: "1px solid #000000", borderLeft: "1px solid #000000", color: "#000000", width: "30%" }}>
+                            {category}
+                          </td>
+                          <td style={{ fontSize: "11pt", padding: "2mm", borderBottom: "1px solid #000000", borderRight: "1px solid #000000", color: "#000000", width: "70%" }}>
+                            {skills.join(", ")}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -217,23 +213,23 @@ export default function PreviewPage() {
                   <div key={index} style={{ marginBottom: "6mm" }}>
                     <div style={{ marginBottom: "2mm" }}>
                       {project.name && (
-                        <div style={{ fontSize: "10pt", color: "#000000" }}>
+                        <div style={{ fontSize: "11pt", color: "#000000" }}>
                           <strong style={{ color: "#000000" }}>Project Name:</strong> {project.name}
                         </div>
                       )}
                       {project.role && (
-                        <div style={{ fontSize: "10pt", color: "#000000" }}>
+                        <div style={{ fontSize: "11pt", color: "#000000" }}>
                           <strong style={{ color: "#000000" }}>Role:</strong> {project.role}
                         </div>
                       )}
                       {project.techStack && project.techStack.length > 0 && (
-                        <div style={{ fontSize: "10pt", color: "#000000" }}>
+                        <div style={{ fontSize: "11pt", color: "#000000" }}>
                           <strong style={{ color: "#000000" }}>Tech Stack:</strong> {project.techStack.join(", ")}
                         </div>
                       )}
                     </div>
                     {project.description && (
-                      <div style={{ fontSize: "10pt", lineHeight: "1.6", color: "#000000" }}>
+                      <div style={{ fontSize: "11pt", lineHeight: "1.6", color: "#000000" }}>
                         <strong style={{ color: "#000000" }}>Description:</strong> {project.description}
                       </div>
                     )}
@@ -242,7 +238,7 @@ export default function PreviewPage() {
                         <strong style={{ color: "#000000" }}>Role & Responsibility:</strong>
                         <ul style={{ listStyle: "none", padding: "0" }}>
                           {project.responsibilities.map((resp, respIndex) => (
-                            <li key={respIndex} style={{ fontSize: "10pt", lineHeight: "1.5", marginBottom: "1mm", paddingLeft: "5mm", position: "relative", color: "#000000" }}>
+                            <li key={respIndex} style={{ fontSize: "11pt", lineHeight: "1.5", marginBottom: "1mm", paddingLeft: "5mm", position: "relative", color: "#000000" }}>
                               <span style={{ position: "absolute", left: "0" }}>•</span>
                               {resp}
                             </li>
@@ -261,38 +257,128 @@ export default function PreviewPage() {
                 <div style={{ fontSize: "12pt", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 4mm 0", paddingBottom: "2mm", borderBottom: "1px solid #000000" }}>
                   WORK EXPERIENCE
                 </div>
-                {resume.workExperience.map((exp, index) => (
-                  <div key={index} style={{ marginBottom: "2mm" }}>
-                    <div style={{ marginBottom: "2mm" }}>
-                      <div style={{ fontSize: "11pt", fontWeight: "bold", marginBottom: "0", color: "#000000" }}>
-                        {exp.designation} at {exp.company}
-                      </div>
-                      {exp.location && (
-                        <div style={{ fontSize: "10pt", color: "#555555" }}>
-                          {exp.location}
-                        </div>
+                <ul style={{ listStyle: "none", padding: "0", margin: "0" }}>
+                  {resume.workExperience.map((exp, index) => (
+                    <li key={index} style={{ fontSize: "11pt", lineHeight: "1.6", marginBottom: "2mm", paddingLeft: "5mm", position: "relative", color: "#000000" }}>
+                      <span style={{ position: "absolute", left: "0" }}>•</span>
+                      {exp.company}
+                      {(exp.startDate || exp.endDate) && ` (${formatDateRange(exp.startDate, exp.endDate)})`}
+                      {exp.designation && ` as ${exp.designation}`}
+                      {exp.location && ` - ${exp.location}`}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Blogs And Articles */}
+            {resume.blogs && resume.blogs.length > 0 && (
+              <div className="page-break" style={{ marginBottom: "8mm" }}>
+                <div style={{ fontSize: "12pt", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 4mm 0", paddingBottom: "2mm", borderBottom: "1px solid #000000" }}>
+                  BLOGS AND ARTICLES PUBLISHED
+                </div>
+                <table style={{ width: "100%", borderCollapse: "collapse", margin: "0", border: "1px solid #000000" }}>
+                  <thead>
+                    <tr>
+                      <th style={{ fontSize: "11pt", fontWeight: "bold", textAlign: "left", padding: "2mm", borderBottom: "1px solid #000000", borderRight: "1px solid #000000", borderTop: "1px solid #000000", borderLeft: "1px solid #000000", color: "#000000", width: "30%" }}>
+                        Category
+                      </th>
+                      <th style={{ fontSize: "11pt", fontWeight: "bold", textAlign: "left", padding: "2mm", borderBottom: "1px solid #000000", borderTop: "1px solid #000000", borderRight: "1px solid #000000", color: "#000000", width: "70%" }}>
+                        Blogs and articles
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(() => {
+                      // Group blogs by category
+                      const groupedBlogs: { [category: string]: Blog[] } = {};
+                      resume.blogs.forEach(blog => {
+                        const category = blog.category || "Others";
+                        if (!groupedBlogs[category]) {
+                          groupedBlogs[category] = [];
+                        }
+                        groupedBlogs[category].push(blog);
+                      });
+
+                      const allRows: Array<{ category: string; blog: Blog; blogIndex: number; categoryIndex: number }> = [];
+                      Object.entries(groupedBlogs).forEach(([category, blogs]) => {
+                        blogs.forEach((blog, blogIndex) => {
+                          allRows.push({ category, blog, blogIndex, categoryIndex: 0 });
+                        });
+                      });
+
+                      const rows: React.ReactElement[] = [];
+                      allRows.forEach((rowData) => {
+                        const isFirstInCategory = rowData.blogIndex === 0;
+                        const categoryBlogs = groupedBlogs[rowData.category];
+                        rows.push(
+                          <tr key={`${rowData.category}-${rowData.blogIndex}`}>
+                            {isFirstInCategory ? (
+                              <td rowSpan={categoryBlogs.length} style={{ fontSize: "11pt", padding: "2mm", borderBottom: "1px solid #000000", borderRight: "1px solid #000000", borderLeft: "1px solid #000000", color: "#000000", verticalAlign: "top", width: "30%" }}>
+                                {rowData.category}
+                              </td>
+                            ) : null}
+                            <td style={{ fontSize: "11pt", padding: "2mm", borderBottom: "1px solid #000000", borderRight: "1px solid #000000", color: "#000000", width: "70%" }}>
+                              {rowData.blogIndex + 1}. {rowData.blog.url ? (
+                                <a href={rowData.blog.url} style={{ color: "#0066cc", textDecoration: "underline" }}>
+                                  {rowData.blog.title}
+                                </a>
+                              ) : (
+                                rowData.blog.title
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      });
+                      return rows;
+                    })()}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Certifications */}
+            {resume.certifications && resume.certifications.length > 0 && (
+              <div style={{ marginBottom: "8mm" }}>
+                <div style={{ fontSize: "12pt", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 4mm 0", paddingBottom: "2mm", borderBottom: "1px solid #000000" }}>
+                  CERTIFICATION
+                </div>
+                <ul style={{ listStyle: "none", padding: "0", margin: "0" }}>
+                  {resume.certifications.map((cert, index) => (
+                    <li key={index} style={{ fontSize: "11pt", lineHeight: "1.6", marginBottom: "2mm", paddingLeft: "5mm", position: "relative", color: "#000000" }}>
+                      <span style={{ position: "absolute", left: "0" }}>•</span>
+                      {cert.name}
+                      {cert.id && ` [${cert.id}]`}
+                      {cert.url && (
+                        <span>
+                          {" "}
+                          <a href={cert.url} style={{ color: "#0066cc", textDecoration: "underline" }}>
+                            (Click to open the credentials)
+                          </a>
+                        </span>
                       )}
-                      {(exp.startDate || exp.endDate) && (
-                        <div style={{ fontSize: "10pt", color: "#555555", marginBottom: "1mm" }}>
-                          {formatDateRange(exp.startDate, exp.endDate)}
-                        </div>
-                      )}
-                    </div>
-                    {exp.responsibilities && exp.responsibilities.length > 0 && (
-                      <div>
-                        <strong style={{ color: "#000000" }}>Role & Responsibility:</strong>
-                        <ul style={{ listStyle: "none", padding: "0", margin: "0" }}>
-                          {exp.responsibilities.map((resp, respIndex) => (
-                            <li key={respIndex} style={{ fontSize: "10pt", lineHeight: "1.6", marginBottom: "2mm", paddingLeft: "5mm", position: "relative", color: "#000000" }}>
-                              <span style={{ position: "absolute", left: "0" }}>•</span>
-                              {resp}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Awards & Achievements */}
+            {resume.awards && resume.awards.length > 0 && (
+              <div style={{ marginBottom: "8mm" }}>
+                <div style={{ fontSize: "12pt", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 4mm 0", paddingBottom: "2mm", borderBottom: "1px solid #000000" }}>
+                  AWARDS & ACHIEVEMENTS
+                </div>
+                <ul style={{ listStyle: "none", padding: "0", margin: "0" }}>
+                  {resume.awards.map((award, index) => (
+                    <li key={index} style={{ fontSize: "11pt", lineHeight: "1.6", marginBottom: "2mm", paddingLeft: "5mm", position: "relative", color: "#000000" }}>
+                      <span style={{ position: "absolute", left: "0" }}>•</span>
+                      <strong>{award.title}</strong>
+                      {award.when && ` (${award.when})`}
+                      {award.purpose && ` - ${award.purpose}`}
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
 
@@ -300,31 +386,19 @@ export default function PreviewPage() {
             {resume.education.length > 0 && (
               <div style={{ marginBottom: "8mm" }}>
                 <div style={{ fontSize: "12pt", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 4mm 0", paddingBottom: "2mm", borderBottom: "1px solid #000000" }}>
-                  EDUCATION & CERTIFICATION
+                  EDUCATIONAL QUALIFICATIONS
                 </div>
-                {resume.education.map((edu, index) => (
-                  <div key={index} style={{ marginBottom: "5mm" }}>
-                    <div>
-                      <div style={{ fontSize: "11pt", fontWeight: "bold", margin: "0", color: "#000000" }}>
-                        {edu.degree}
-                        {edu.specialization && ` - ${edu.specialization}`}
-                      </div>
-                      <div style={{ fontSize: "10pt", color: "#555555", margin: "1mm 0" }}>
-                        {edu.college}
-                      </div>
-                      {edu.location && (
-                        <div style={{ fontSize: "10pt", color: "#555555", margin: "1mm 0" }}>
-                          {edu.location}
-                        </div>
-                      )}
-                      {(edu.startYear || edu.completionYear) && (
-                        <div style={{ fontSize: "10pt", color: "#555555", margin: "1mm 0" }}>
-                          {formatEducationDate(edu.startYear, edu.completionYear)}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                <ul style={{ listStyle: "none", padding: "0", margin: "0" }}>
+                  {resume.education.map((edu, index) => (
+                    <li key={index} style={{ fontSize: "11pt", lineHeight: "1.6", marginBottom: "2mm", paddingLeft: "5mm", position: "relative", color: "#000000" }}>
+                      <span style={{ position: "absolute", left: "0" }}>•</span>
+                      {edu.degree}
+                      {edu.specialization && ` - ${edu.specialization}`}
+                      {` - ${edu.college}`}
+                      {edu.location && ` / ${edu.location}`}
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
           </div>

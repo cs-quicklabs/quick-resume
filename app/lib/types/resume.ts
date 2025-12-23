@@ -14,6 +14,9 @@ export interface Resume {
   projects: Project[];
   workExperience: WorkExperience[];
   education: Education[];
+  blogs?: Blog[];
+  certifications?: Certification[];
+  awards?: Award[];
 }
 
 export interface Project {
@@ -40,5 +43,23 @@ export interface Education {
   location?: string;
   startYear?: string;
   completionYear?: string;
+}
+
+export interface Blog {
+  category?: string;
+  title: string;
+  url?: string;
+}
+
+export interface Certification {
+  name: string;
+  id?: string;
+  url?: string;
+}
+
+export interface Award {
+  title: string;
+  purpose?: string;
+  when?: string;
 }
 

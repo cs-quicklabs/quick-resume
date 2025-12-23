@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
 
     // Fetch sheet data
     const sheetsService = new GoogleSheetsService();
-    const range = `${sheetName}!A:Z`;
+    const range = `${sheetName}!A:AG`;
     const rows = await sheetsService.getSpreadsheetData(spreadsheetId, range);
 
     // Map to Resume object

@@ -1,4 +1,4 @@
-import { Resume, Project, WorkExperience, Education } from "../types/resume";
+import { Resume, Project, WorkExperience, Education, Blog, Certification, Award } from "../types/resume";
 import { COLUMN_INDEXES } from "../constants/resumeTemplates";
 
 export class ResumeMapper {
@@ -21,40 +21,37 @@ export class ResumeMapper {
       email: firstRow[COLUMN_INDEXES.EMAIL]?.toString().trim() || undefined,
     };
 
-    // Extract objective (should be from first row only)
     const objective = firstRow[COLUMN_INDEXES.OBJECTIVE]?.toString().trim() || "";
-
-    // Extract summary, skills, projects, work experience, education from all rows
     const summary: string[] = [];
     const technicalSkills: { [category: string]: string[] } = {};
     const projects: Project[] = [];
     const workExperience: WorkExperience[] = [];
     const education: Education[] = [];
+    const blogs: Blog[] = [];
+    const certifications: Certification[] = [];
+    const awards: Award[] = [];
 
-    // Process all data rows
     for (let i = 0; i < dataRows.length; i++) {
       const row = dataRows[i] as string[];
 
-      // Summary (column 5) - each row can have a summary bullet point
       const summaryText = row[COLUMN_INDEXES.SUMMARY]?.toString().trim();
       if (summaryText) {
         summary.push(summaryText);
       }
 
-      // Skills (columns 6-7: SKILL_GROUP and SKILL_NAME)
+      // Skills
       const skillGroup = row[COLUMN_INDEXES.SKILL_GROUP]?.toString().trim();
       const skillName = row[COLUMN_INDEXES.SKILL_NAME]?.toString().trim();
       if (skillGroup && skillName) {
         if (!technicalSkills[skillGroup]) {
           technicalSkills[skillGroup] = [];
         }
-        // Add skill if not already in the array (avoid duplicates)
         if (!technicalSkills[skillGroup].includes(skillName)) {
           technicalSkills[skillGroup].push(skillName);
         }
       }
 
-      // Projects (columns 8-12)
+      // Projects
       const projectName = row[COLUMN_INDEXES.PROJECT_NAME]?.toString().trim();
       const role = row[COLUMN_INDEXES.ROLE]?.toString().trim();
       const techStack = row[COLUMN_INDEXES.TECHSTACK]?.toString().trim();
@@ -78,7 +75,7 @@ export class ResumeMapper {
         lastProject.responsibilities.push(responsibility);
       }
 
-      // Work Experience (columns 13-17)
+      // Work Experience
       const designation = row[COLUMN_INDEXES.DESIGNATION]?.toString().trim();
       const companyName = row[COLUMN_INDEXES.COMPANY_NAME]?.toString().trim();
       const companyLocation = row[COLUMN_INDEXES.COMPANY_LOCATION]?.toString().trim();
@@ -96,7 +93,7 @@ export class ResumeMapper {
         workExperience.push(exp);
       }
 
-      // Education (columns 18-23)
+      // Education
       const degree = row[COLUMN_INDEXES.DEGREE]?.toString().trim();
       const specialization = row[COLUMN_INDEXES.SPECIALIZATION]?.toString().trim();
       const collegeName = row[COLUMN_INDEXES.COLLEGE_NAME]?.toString().trim();
@@ -115,6 +112,45 @@ export class ResumeMapper {
         };
         education.push(edu);
       }
+
+      // Blogs And Articles
+      const blogTitle = row[COLUMN_INDEXES.BLOG_TITLE]?.toString().trim();
+      if (blogTitle) {
+        const blogCategory = row[COLUMN_INDEXES.BLOG_CATEGORY]?.toString().trim();
+        const blogUrl = row[COLUMN_INDEXES.BLOG_URL]?.toString().trim();
+        const blog: Blog = {
+          category: blogCategory || undefined,
+          title: blogTitle,
+          url: blogUrl || undefined,
+        };
+        blogs.push(blog);
+      }
+
+      // Certifications
+      const certificationName = row[COLUMN_INDEXES.CERTIFICATION_NAME]?.toString().trim();
+      if (certificationName) {
+        const certificateId = row[COLUMN_INDEXES.CERTIFICATE_ID]?.toString().trim();
+        const certificateUrl = row[COLUMN_INDEXES.CERTIFICATE_URL]?.toString().trim();
+        const cert: Certification = {
+          name: certificationName,
+          id: certificateId || undefined,
+          url: certificateUrl || undefined,
+        };
+        certifications.push(cert);
+      }
+
+      // Awards & Achievements
+      const awardTitle = row[COLUMN_INDEXES.AWARD_TITLE]?.toString().trim();
+      if (awardTitle) {
+        const awardPurpose = row[COLUMN_INDEXES.AWARD_PURPOSE]?.toString().trim();
+        const awardWhen = row[COLUMN_INDEXES.AWARD_WHEN]?.toString().trim();
+        const award: Award = {
+          title: awardTitle,
+          purpose: awardPurpose || undefined,
+          when: awardWhen || undefined,
+        };
+        awards.push(award);
+      }
     }
 
     return {
@@ -125,6 +161,9 @@ export class ResumeMapper {
       projects,
       workExperience,
       education,
+      blogs,
+      certifications,
+      awards,
     };
   }
 }
