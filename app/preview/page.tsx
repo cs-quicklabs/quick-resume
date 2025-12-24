@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Resume, Blog } from "@/app/lib/types/resume";
 import { Button } from "@/components/ui/button";
 
@@ -8,6 +8,8 @@ export default function PreviewPage() {
   const [resume, setResume] = useState<Resume | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [generatingPdf, setGeneratingPdf] = useState(false);
+  const resumeContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Get resume data.
@@ -27,8 +29,45 @@ export default function PreviewPage() {
     }
   }, []);
 
-  const handlePrint = () => {
-    window.print();
+  const handlePrint = async () => {
+    if (!resumeContainerRef.current) return;
+
+    setGeneratingPdf(true);
+    try {
+      const element = resumeContainerRef.current;
+
+      // Get the inner HTML of the resume container
+      const htmlContent = element.innerHTML;
+
+      // Send HTML to Playwright API for PDF generation
+      const response = await fetch("/api/pdf", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ html: htmlContent }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate PDF");
+      }
+
+      // Get PDF blob and download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "resume.pdf";
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error("Error generating PDF:", err);
+      alert("Failed to generate PDF. Please try again.");
+    } finally {
+      setGeneratingPdf(false);
+    }
   };
 
   if (loading) {
@@ -57,7 +96,6 @@ export default function PreviewPage() {
     if (start && end) return `${start} - ${end}`;
     return start || end || "";
   };
-
 
   return (
     <>
@@ -90,6 +128,27 @@ export default function PreviewPage() {
         }
         
         @media screen {
+          .resume-pages-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+            padding: 20px 0;
+          }
+          
+          .resume-page {
+            width: 210mm;
+            height: 297mm;
+            padding: 20mm;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            page-break-after: always;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+          }
+          
           .resume-container {
             max-width: 210mm;
             margin: 20px auto;
@@ -102,14 +161,15 @@ export default function PreviewPage() {
         <div className="container mx-auto px-4">
           <div className="mb-4 flex justify-between items-center no-print">
             <h1 className="text-2xl font-bold">Resume Preview</h1>
-            <Button onClick={handlePrint}>
-              Print / Save as PDF
+            <Button onClick={handlePrint} disabled={generatingPdf}>
+              {generatingPdf ? "Generating PDF..." : "Save as PDF"}
             </Button>
           </div>
 
           {/* Resume HTML Container */}
           <div
-            className="resume-container bg-white"
+            ref={resumeContainerRef}
+            className="resume-container"
             style={{
               width: "210mm",
               minHeight: "297mm",
@@ -141,7 +201,7 @@ export default function PreviewPage() {
 
             {/* Objective */}
             {resume.objective && (
-              <div style={{ marginBottom: "8mm" }}>
+              <div data-section="objective" style={{ marginBottom: "8mm" }}>
                 <div style={{ fontSize: "12pt", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 4mm 0", paddingBottom: "2mm", borderBottom: "1px solid #000000" }}>
                   OBJECTIVE
                 </div>
@@ -153,7 +213,7 @@ export default function PreviewPage() {
 
             {/* Summary */}
             {resume.summary.length > 0 && (
-              <div style={{ marginBottom: "8mm" }}>
+              <div data-section="summary" style={{ marginBottom: "8mm" }}>
                 <div style={{ fontSize: "12pt", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 4mm 0", paddingBottom: "2mm", borderBottom: "1px solid #000000" }}>
                   SUMMARY
                 </div>
@@ -170,7 +230,7 @@ export default function PreviewPage() {
 
             {/* Technical Skills */}
             {Object.keys(resume.technicalSkills).length > 0 && (
-              <div style={{ marginBottom: "8mm" }}>
+              <div data-section="skills" style={{ marginBottom: "8mm" }}>
                 <div style={{ fontSize: "12pt", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 4mm 0", paddingBottom: "2mm", borderBottom: "1px solid #000000" }}>
                   TECHNICAL SKILLS
                 </div>
@@ -205,7 +265,7 @@ export default function PreviewPage() {
 
             {/* Projects */}
             {resume.projects.length > 0 && (
-              <div className="page-break" style={{ marginBottom: "8mm" }}>
+              <div data-section="projects" className="page-break" style={{ marginBottom: "8mm" }}>
                 <div style={{ fontSize: "12pt", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 4mm 0", paddingBottom: "2mm", borderBottom: "1px solid #000000" }}>
                   PROJECTS
                 </div>
@@ -253,13 +313,13 @@ export default function PreviewPage() {
 
             {/* Work Experience */}
             {resume.workExperience.length > 0 && (
-              <div className="page-break" style={{ marginBottom: "8mm" }}>
+              <div data-section="experience" className="page-break" style={{ marginBottom: "8mm" }}>
                 <div style={{ fontSize: "12pt", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 4mm 0", paddingBottom: "2mm", borderBottom: "1px solid #000000" }}>
                   WORK EXPERIENCE
                 </div>
                 <ul style={{ listStyle: "none", padding: "0", margin: "0" }}>
                   {resume.workExperience.map((exp, index) => (
-                    <li key={index} style={{ fontSize: "11pt", lineHeight: "1.6", marginBottom: "2mm", paddingLeft: "5mm", position: "relative", color: "#000000" }}>
+                    <li key={index} style={{ fontSize: "11pt", lineHeight: "1.6", marginBottom: index < resume.workExperience.length - 1 ? "1mm" : "0", paddingLeft: "5mm", position: "relative", color: "#000000" }}>
                       <span style={{ position: "absolute", left: "0" }}>•</span>
                       {exp.company}
                       {(exp.startDate || exp.endDate) && ` (${formatDateRange(exp.startDate, exp.endDate)})`}
@@ -271,9 +331,74 @@ export default function PreviewPage() {
               </div>
             )}
 
+            {/* Education */}
+            {resume.education.length > 0 && (
+              <div data-section="education" style={{ marginBottom: "8mm" }}>
+                <div style={{ fontSize: "12pt", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 4mm 0", paddingBottom: "2mm", borderBottom: "1px solid #000000" }}>
+                  EDUCATIONAL QUALIFICATIONS
+                </div>
+                <ul style={{ listStyle: "none", padding: "0", margin: "0" }}>
+                  {resume.education.map((edu, index) => (
+                    <li key={index} style={{ fontSize: "11pt", lineHeight: "1.6", marginBottom: "2mm", paddingLeft: "5mm", position: "relative", color: "#000000" }}>
+                      <span style={{ position: "absolute", left: "0" }}>•</span>
+                      {edu.degree}
+                      {edu.specialization && ` - ${edu.specialization}`}
+                      {` - ${edu.college}`}
+                      {edu.location && ` / ${edu.location}`}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Certifications */}
+            {resume.certifications && resume.certifications.length > 0 && (
+              <div data-section="certifications" style={{ marginBottom: "8mm" }}>
+                <div style={{ fontSize: "12pt", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 4mm 0", paddingBottom: "2mm", borderBottom: "1px solid #000000" }}>
+                  CERTIFICATION
+                </div>
+                <ul style={{ listStyle: "none", padding: "0", margin: "0" }}>
+                  {resume.certifications.map((cert, index) => (
+                    <li key={index} style={{ fontSize: "11pt", lineHeight: "1.6", marginBottom: "2mm", paddingLeft: "5mm", position: "relative", color: "#000000" }}>
+                      <span style={{ position: "absolute", left: "0" }}>•</span>
+                      {cert.name}
+                      {cert.id && ` [${cert.id}]`}
+                      {cert.url && (
+                        <span>
+                          {" "}
+                          <a href={cert.url} style={{ color: "#0066cc", textDecoration: "underline" }}>
+                            (Click to open the credentials)
+                          </a>
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Awards & Achievements */}
+            {resume.awards && resume.awards.length > 0 && (
+              <div data-section="awards" style={{ marginBottom: "8mm" }}>
+                <div style={{ fontSize: "12pt", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 4mm 0", paddingBottom: "2mm", borderBottom: "1px solid #000000" }}>
+                  AWARDS & ACHIEVEMENTS
+                </div>
+                <ul style={{ listStyle: "none", padding: "0", margin: "0" }}>
+                  {resume.awards.map((award, index) => (
+                    <li key={index} style={{ fontSize: "11pt", lineHeight: "1.6", marginBottom: "2mm", paddingLeft: "5mm", position: "relative", color: "#000000" }}>
+                      <span style={{ position: "absolute", left: "0" }}>•</span>
+                      <strong>{award.title}</strong>
+                      {award.when && ` (${award.when})`}
+                      {award.purpose && ` - ${award.purpose}`}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {/* Blogs And Articles */}
             {resume.blogs && resume.blogs.length > 0 && (
-              <div className="page-break" style={{ marginBottom: "8mm" }}>
+              <div data-section="blogs" style={{ marginBottom: "8mm" }}>
                 <div style={{ fontSize: "12pt", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 4mm 0", paddingBottom: "2mm", borderBottom: "1px solid #000000" }}>
                   BLOGS AND ARTICLES PUBLISHED
                 </div>
@@ -334,71 +459,6 @@ export default function PreviewPage() {
                     })()}
                   </tbody>
                 </table>
-              </div>
-            )}
-
-            {/* Certifications */}
-            {resume.certifications && resume.certifications.length > 0 && (
-              <div style={{ marginBottom: "8mm" }}>
-                <div style={{ fontSize: "12pt", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 4mm 0", paddingBottom: "2mm", borderBottom: "1px solid #000000" }}>
-                  CERTIFICATION
-                </div>
-                <ul style={{ listStyle: "none", padding: "0", margin: "0" }}>
-                  {resume.certifications.map((cert, index) => (
-                    <li key={index} style={{ fontSize: "11pt", lineHeight: "1.6", marginBottom: "2mm", paddingLeft: "5mm", position: "relative", color: "#000000" }}>
-                      <span style={{ position: "absolute", left: "0" }}>•</span>
-                      {cert.name}
-                      {cert.id && ` [${cert.id}]`}
-                      {cert.url && (
-                        <span>
-                          {" "}
-                          <a href={cert.url} style={{ color: "#0066cc", textDecoration: "underline" }}>
-                            (Click to open the credentials)
-                          </a>
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Awards & Achievements */}
-            {resume.awards && resume.awards.length > 0 && (
-              <div style={{ marginBottom: "8mm" }}>
-                <div style={{ fontSize: "12pt", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 4mm 0", paddingBottom: "2mm", borderBottom: "1px solid #000000" }}>
-                  AWARDS & ACHIEVEMENTS
-                </div>
-                <ul style={{ listStyle: "none", padding: "0", margin: "0" }}>
-                  {resume.awards.map((award, index) => (
-                    <li key={index} style={{ fontSize: "11pt", lineHeight: "1.6", marginBottom: "2mm", paddingLeft: "5mm", position: "relative", color: "#000000" }}>
-                      <span style={{ position: "absolute", left: "0" }}>•</span>
-                      <strong>{award.title}</strong>
-                      {award.when && ` (${award.when})`}
-                      {award.purpose && ` - ${award.purpose}`}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Education */}
-            {resume.education.length > 0 && (
-              <div style={{ marginBottom: "8mm" }}>
-                <div style={{ fontSize: "12pt", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 4mm 0", paddingBottom: "2mm", borderBottom: "1px solid #000000" }}>
-                  EDUCATIONAL QUALIFICATIONS
-                </div>
-                <ul style={{ listStyle: "none", padding: "0", margin: "0" }}>
-                  {resume.education.map((edu, index) => (
-                    <li key={index} style={{ fontSize: "11pt", lineHeight: "1.6", marginBottom: "2mm", paddingLeft: "5mm", position: "relative", color: "#000000" }}>
-                      <span style={{ position: "absolute", left: "0" }}>•</span>
-                      {edu.degree}
-                      {edu.specialization && ` - ${edu.specialization}`}
-                      {` - ${edu.college}`}
-                      {edu.location && ` / ${edu.location}`}
-                    </li>
-                  ))}
-                </ul>
               </div>
             )}
           </div>
