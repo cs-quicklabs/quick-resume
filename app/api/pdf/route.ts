@@ -45,34 +45,62 @@ export async function POST(request: NextRequest) {
               background: white;
             }
             
-            /* Prevent breaking inside elements */
-            h1, h2, h3, p, ul, ol, div, table {
+            /* Section containers - allow breaking if too large, but prefer keeping together */
+            [data-section] {
+              page-break-inside: auto;
+              break-inside: auto;
+            }
+            
+            /* Section headings - keep with at least the first line of content */
+            [data-section] > div:first-child {
+              page-break-after: avoid;
+              break-after: avoid;
               page-break-inside: avoid;
               break-inside: avoid;
+            }
+            
+            /* Prevent breaking inside specific elements */
+            h1, h2, h3 {
+              page-break-after: avoid;
+              break-after: avoid;
+              page-break-inside: avoid;
+              break-inside: avoid;
+            }
+            
+            /* Paragraphs - prevent orphans/widows */
+            p {
+              orphans: 3;
+              widows: 3;
+              page-break-inside: avoid;
+              break-inside: avoid;
+            }
+            
+            /* List items - keep individual items together, but allow breaking between items */
+            ul, ol {
+              page-break-inside: auto;
+              break-inside: auto;
             }
             
             li {
+              orphans: 2;
+              widows: 2;
               page-break-inside: avoid;
               break-inside: avoid;
             }
             
-            /* Prevent orphans and widows */
-            p, li {
-              orphans: 3;
-              widows: 3;
-            }
-            
-            /* Table page breaks */
+            /* Tables - allow breaking across pages if needed */
             table {
-              page-break-inside: avoid;
-              break-inside: avoid;
+              page-break-inside: auto;
+              break-inside: auto;
             }
             
+            /* Table rows should not break */
             tr {
               page-break-inside: avoid;
               break-inside: avoid;
             }
             
+            /* Table headers repeat on new pages */
             thead {
               display: table-header-group;
             }
@@ -81,9 +109,22 @@ export async function POST(request: NextRequest) {
               display: table-footer-group;
             }
             
-            .page-break {
-              page-break-before: always;
-              break-before: page;
+            /* Individual project items - keep each project together */
+            [data-section="projects"] > div[style*="marginBottom"] {
+              page-break-inside: avoid;
+              break-inside: avoid;
+            }
+            
+            /* Individual work experience items - keep together */
+            [data-section="experience"] ul > li {
+              page-break-inside: avoid;
+              break-inside: avoid;
+            }
+            
+            /* Summary list items - keep together */
+            [data-section="summary"] ul > li {
+              page-break-inside: avoid;
+              break-inside: avoid;
             }
             
             /* Ensure links are visible in PDF */
