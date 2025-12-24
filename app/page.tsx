@@ -1,5 +1,5 @@
-import { ResumeForm } from "@/components/resume-form";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-    return <ResumeForm />;
+    redirect("/dashboard");
 }
