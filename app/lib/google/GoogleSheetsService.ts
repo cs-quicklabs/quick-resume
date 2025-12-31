@@ -33,7 +33,7 @@ export class GoogleSheetsService {
       // Fallback to file (for development)
       try {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
-        credentials = require("../constants/credentials.json");
+       // credentials = require("../constants/credentials.json");
       } catch {
         throw new Error(
           "Google Sheets credentials not found. Please set environment variables or add credentials.json file."

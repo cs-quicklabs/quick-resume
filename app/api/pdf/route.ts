@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { chromium } from "playwright";
+import { readFile } from "fs/promises";
+import { join } from "path";
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,6 +11,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "HTML content is required" },
         { status: 400 }
+      );
+    }
+
+    // Read logo image and convert to base64
+    let logoBase64 = "";
+    try {
+      const logoPath = join(process.cwd(), "public", "crownstack_logo.png");
+      const logoBuffer = await readFile(logoPath);
+      logoBase64 = logoBuffer.toString("base64");
+    } catch (error) {
+      console.warn("Could not load logo image:", error);
+    }
+
+    // Replace logo image src in HTML with base64 data URI
+    let processedHtml = html;
+    if (logoBase64) {
+      processedHtml = processedHtml.replace(
+        /src="\/crownstack_logo\.(jpeg|jpg|png)"/g,
+        `src="data:image/png;base64,${logoBase64}"`
       );
     }
 
@@ -135,7 +156,7 @@ export async function POST(request: NextRequest) {
           </style>
         </head>
         <body>
-          ${html}
+          ${processedHtml}
         </body>
       </html>
     `;
@@ -147,9 +168,9 @@ export async function POST(request: NextRequest) {
       format: "A4",
       printBackground: true,
       margin: {
-        top: "20mm",
+        top: "10mm",
         right: "20mm",
-        bottom: "20mm",
+        bottom: "10mm",
         left: "20mm",
       },
     });
