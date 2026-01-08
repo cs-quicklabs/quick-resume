@@ -13,33 +13,36 @@ export class GoogleSheetsService {
   private auth: any;
 
   constructor() {
-    // Load credentials from environment or file
-    // In production, use environment variables
-    let credentials: any;
-    
-    // Try to load from environment variables first (recommended for production)
-    if (process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
-      credentials = {
-        type: "service_account",
-        project_id: process.env.GOOGLE_PROJECT_ID,
-        private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
-        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
-        client_email: process.env.GOOGLE_CLIENT_EMAIL,
-        client_id: process.env.GOOGLE_CLIENT_ID,
-        auth_uri: "https://accounts.google.com/o/oauth2/auth",
-        token_uri: "https://oauth2.googleapis.com/token",
-      };
-    } else {
-      // Fallback to file (for development)
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-       // credentials = require("../constants/credentials.json");
-      } catch {
-        throw new Error(
-          "Google Sheets credentials not found. Please set environment variables or add credentials.json file."
-        );
-      }
+    // Validate required environment variables
+    const requiredEnvVars = {
+      GOOGLE_PROJECT_ID: process.env.GOOGLE_PROJECT_ID,
+      GOOGLE_PRIVATE_KEY_ID: process.env.GOOGLE_PRIVATE_KEY_ID,
+      GOOGLE_PRIVATE_KEY: process.env.GOOGLE_PRIVATE_KEY,
+      GOOGLE_CLIENT_EMAIL: process.env.GOOGLE_CLIENT_EMAIL,
+      GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    };
+
+    const missingVars = Object.entries(requiredEnvVars)
+      .filter(([_, value]) => !value)
+      .map(([key]) => key);
+
+    if (missingVars.length > 0) {
+      throw new Error(
+        `Missing required Google Sheets environment variables: ${missingVars.join(", ")}. Please set these in your environment configuration.`
+      );
     }
+
+    // Create credentials object with validated environment variables
+    const credentials = {
+      type: "service_account",
+      project_id: requiredEnvVars.GOOGLE_PROJECT_ID,
+      private_key_id: requiredEnvVars.GOOGLE_PRIVATE_KEY_ID,
+      private_key: requiredEnvVars.GOOGLE_PRIVATE_KEY!.replace(/\\n/g, "\n"),
+      client_email: requiredEnvVars.GOOGLE_CLIENT_EMAIL,
+      client_id: requiredEnvVars.GOOGLE_CLIENT_ID,
+      auth_uri: "https://accounts.google.com/o/oauth2/auth",
+      token_uri: "https://oauth2.googleapis.com/token",
+    };
 
     // Use Drive API scope if we need to list spreadsheets
     const scopes = [

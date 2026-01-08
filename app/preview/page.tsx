@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Resume, Blog } from "@/app/lib/types/resume";
 import { Button } from "@/components/ui/button";
+import { Header } from "@/components/layout/Header";
 
 export default function PreviewPage() {
   const [resume, setResume] = useState<Resume | null>(null);
@@ -155,14 +156,30 @@ export default function PreviewPage() {
         }
       `}</style>
 
-      <div className="min-h-screen bg-gray-100 py-8">
-        <div className="container mx-auto px-4">
-          <div className="mb-4 flex justify-between items-center no-print">
-            <h1 className="text-2xl font-bold">Resume Preview</h1>
-            <Button onClick={handlePrint} disabled={generatingPdf}>
-              {generatingPdf ? "Generating PDF..." : "Save as PDF"}
-            </Button>
-          </div>
+      <div className="min-h-screen bg-gray-50">
+        <div className="no-print">
+          <Header
+            actions={
+              <Button
+                onClick={handlePrint}
+                disabled={generatingPdf}
+                className="bg-[#6C757D] hover:bg-[#5a6268] text-white border-0"
+              >
+                {generatingPdf ? "Generating PDF..." : "Save as PDF"}
+              </Button>
+            }
+            userInitials={
+              resume?.personalInfo?.name
+                ? resume.personalInfo.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                : undefined
+            }
+          />
+        </div>
+
+        <div className="container mx-auto px-4 py-4">
 
           {/* Resume HTML Container */}
           <div
