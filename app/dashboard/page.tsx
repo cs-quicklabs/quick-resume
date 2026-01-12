@@ -92,9 +92,9 @@ export default function DashboardPage() {
     setError("");
 
     try {
-      const [spreadsheetId, sheetName] = selectedSheet.split("|");
+      const [spreadsheetId, sheetName, sheetGid] = selectedSheet.split("|");
 
-      if (!spreadsheetId || !sheetName) {
+      if (!spreadsheetId || !sheetName || !sheetGid) {
         setError("Invalid sheet selection");
         setLoading(false);
         return;
@@ -114,6 +114,9 @@ export default function DashboardPage() {
       if (response.ok) {
         const data = await response.json();
         sessionStorage.setItem("resumeData", JSON.stringify(data.resume));
+        sessionStorage.setItem("spreadsheetId", spreadsheetId);
+        sessionStorage.setItem("sheetName", sheetName);
+        sessionStorage.setItem("sheetGid", sheetGid);
         window.location.href = "/preview";
       } else {
         const data = await response.json();
