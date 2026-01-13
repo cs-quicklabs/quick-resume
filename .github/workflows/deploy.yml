@@ -1,0 +1,45 @@
+name: Deploy to Production
+on:
+  push: 
+      branches:
+        - dev 
+
+jobs:
+   deploy: 
+      name: Deploy App to DigitalOcean
+      runs-on: ubuntu-latest
+
+      steps:
+      # Pull the latest code into the GitHub runner
+       - name: Code checkout 
+         uses: actions/checkout@v4
+
+      # Load SSH key so GitHub Actions can connect to your server
+       - name: Setup SSH agent
+         uses: webfactory/ssh-agent@v0.9.0
+         with: 
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+    
+      # Connect to the server and deploy
+       - name: Deploy on server via SSH
+         run: |
+          ssh -o StrictHostKeyChecking=no \
+          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+         
+            echo "Connected to Server."
+            cd ${{ secrets.APP_DIR }}
+
+            echo "Pulling Latest code."
+            git pull origin dev
+
+            echo "Insatlling Dependecies"
+            npm install
+
+            echo "Creating Build."
+            npm run build
+
+            echo "Restarting PM2 processes."
+            pm2 restart quick-resume
+
+            echo "Deployment finished successfully."
+          EOF
