@@ -1,5 +1,7 @@
+import "server-only";
 import { google } from "googleapis";
 import type { sheets_v4 } from "googleapis";
+import type { GoogleAuth } from "google-auth-library";
 
 export interface SheetInfo {
   id: string;
@@ -10,7 +12,7 @@ export interface SheetInfo {
 
 export class GoogleSheetsService {
   private sheets: sheets_v4.Sheets;
-  private auth: any;
+  private auth: GoogleAuth;
 
   constructor() {
     // Validate required environment variables
@@ -23,7 +25,7 @@ export class GoogleSheetsService {
     };
 
     const missingVars = Object.entries(requiredEnvVars)
-      .filter(([_, value]) => !value)
+      .filter(([, value]) => !value)
       .map(([key]) => key);
 
     if (missingVars.length > 0) {
@@ -87,6 +89,30 @@ export class GoogleSheetsService {
     } catch (error) {
       throw new Error(
         `Failed to fetch spreadsheet info: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
+
+  /**
+   * Resolve a sheet name (tab title) from a sheet GID.
+   */
+  async getSheetNameByGid(spreadsheetId: string, sheetGid: number): Promise<string> {
+    try {
+      const response = await this.sheets.spreadsheets.get({ spreadsheetId });
+
+      const match = response.data.sheets?.find(
+        (sheet) => sheet.properties?.sheetId === sheetGid
+      );
+
+      const title = match?.properties?.title;
+      if (!title) {
+        throw new Error(`Sheet with GID ${sheetGid} not found in spreadsheet ${spreadsheetId}`);
+      }
+
+      return title;
+    } catch (error) {
+      throw new Error(
+        `Failed to resolve sheet name for GID ${sheetGid}: ${error instanceof Error ? error.message : String(error)}`
       );
     }
   }

@@ -3,31 +3,56 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Resume, Blog } from "@/app/lib/types/resume";
 import { Header } from "@/components/layout/Header";
+import { Button } from "@/components/ui/button";
+import { useSearchParams } from "next/navigation";
 
 export default function PreviewPage() {
   const [resume, setResume] = useState<Resume | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [spreadsheetId, setSpreadsheetId] = useState<string | null>(null);
   const resumeContainerRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
+  const candidateGid = searchParams.get("candidateGid");
 
   useEffect(() => {
-    // Get resume data.
-    try {
-      const resumeData = sessionStorage.getItem("resumeData");
-      if (resumeData) {
-        const parsedResume = JSON.parse(resumeData) as Resume;
-        setResume(parsedResume);
-        setLoading(false);
-      } else {
+    const load = async () => {
+      if (!candidateGid) {
         setError("No resume data found. Please generate a resume first.");
         setLoading(false);
+        return;
       }
-    } catch {
-      setError("Failed to parse resume data");
-      setLoading(false);
-    }
-  }, []);
+
+      try {
+        const response = await fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            // API expects sheetGid; frontend uses candidateGid in the URL.
+            sheetGid: Number.parseInt(candidateGid, 10),
+          }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.error || "Failed to fetch resume from Google Sheets");
+        }
+
+        const data = await response.json();
+        setResume(data.resume as Resume);
+        setSpreadsheetId(data.spreadsheetId ? String(data.spreadsheetId) : null);
+        setLoading(false);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch resume data");
+        setLoading(false);
+      }
+    };
+
+    setLoading(true);
+    setError("");
+    void load();
+  }, [candidateGid]);
 
   const handlePrint = async () => {
     if (!resumeContainerRef.current) return;
@@ -69,19 +94,33 @@ export default function PreviewPage() {
   };
 
   const handleOpenInGoogleSheets = () => {
-    const spreadsheetId = sessionStorage.getItem("spreadsheetId");
-    const sheetGid = sessionStorage.getItem("sheetGid");
-
-    if (!spreadsheetId || !sheetGid) {
+    if (!spreadsheetId || !candidateGid) {
       alert("Spreadsheet information not found. Please generate a resume first.");
       return;
     }
 
     // Construct Google Sheets URL with specific sheet selected
-    const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit?gid=${sheetGid}#gid=${sheetGid}`;
+    const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit?gid=${candidateGid}#gid=${candidateGid}`;
 
     // Open in new tab
     window.open(url, "_blank");
+  };
+
+  const handleCopyShareLink = async () => {
+    if (!candidateGid) {
+      alert("Candidate id not found. Please generate a resume first.");
+      return;
+    }
+
+    const shareUrl = `${window.location.origin}/preview?candidateGid=${encodeURIComponent(candidateGid)}`;
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      alert("Share link copied to clipboard");
+    } catch {
+      // Fallback for browsers without clipboard permissions
+      prompt("Copy this share link:", shareUrl);
+    }
   };
 
   if (loading) {
@@ -177,6 +216,16 @@ export default function PreviewPage() {
             onPrint={handlePrint}
             generatingPdf={generatingPdf}
             onOpenSheet={handleOpenInGoogleSheets}
+            actions={
+              <Button
+                onClick={handleCopyShareLink}
+                disabled={generatingPdf}
+                variant="outline"
+                className="bg-transparent hover:bg-gray-700 text-white border-white/20 hover:border-white/40"
+              >
+                Copy share link
+              </Button>
+            }
             userInitials={
               resume?.personalInfo?.name
                 ? resume.personalInfo.name
