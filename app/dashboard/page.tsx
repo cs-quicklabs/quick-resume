@@ -92,36 +92,17 @@ export default function DashboardPage() {
     setError("");
 
     try {
-      const [spreadsheetId, sheetName, sheetGid] = selectedSheet.split("|");
+      const candidateGid = selectedSheet.split("|")[2];
 
-      if (!spreadsheetId || !sheetName || !sheetGid) {
+      if (!candidateGid) {
         setError("Invalid sheet selection");
         setLoading(false);
         return;
       }
 
-      const response = await fetch("/api/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          spreadsheetId,
-          sheetName,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        sessionStorage.setItem("resumeData", JSON.stringify(data.resume));
-        sessionStorage.setItem("spreadsheetId", spreadsheetId);
-        sessionStorage.setItem("sheetName", sheetName);
-        sessionStorage.setItem("sheetGid", sheetGid);
-        window.location.href = "/preview";
-      } else {
-        const data = await response.json();
-        setError(data.error || "Failed to generate resume");
-      }
+      // The preview means "render resume for this candidate sheet".
+      // Resume data is fetched server-side from Google Sheets using the `candidateGid` param.
+      window.location.href = `/preview?candidateGid=${encodeURIComponent(candidateGid)}`;
     } catch {
       setError("An error occurred while generating the resume");
     } finally {
