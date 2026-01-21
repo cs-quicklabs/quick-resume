@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { Suspense, useEffect, useState, useRef } from "react";
 import { Resume, Blog } from "@/app/lib/types/resume";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from "next/navigation";
 
-export default function PreviewPage() {
+function PreviewPageContent() {
   const [resume, setResume] = useState<Resume | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -249,7 +249,9 @@ export default function PreviewPage() {
               padding: "20mm",
               margin: "0 auto",
               backgroundColor: "#ffffff",
-              fontFamily: "Helvetica, Arial, sans-serif",
+              // Match the app's font variable (Roboto via `next/font`) for consistent metrics.
+              // The PDF generator also maps to Roboto to avoid platform-specific fallbacks (e.g. Helvetica missing on Linux).
+              fontFamily: "var(--font-sans), Arial, sans-serif",
               fontSize: "11pt",
               lineHeight: "1.5",
               color: "#000000",
@@ -563,5 +565,21 @@ export default function PreviewPage() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function PreviewPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-lg">Loading resume...</p>
+          </div>
+        </div>
+      }
+    >
+      <PreviewPageContent />
+    </Suspense>
   );
 }

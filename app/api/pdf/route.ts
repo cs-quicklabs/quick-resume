@@ -46,6 +46,9 @@ export async function POST(request: NextRequest) {
       <html>
         <head>
           <meta charset="UTF-8">
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+          <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
           <style>
             * {
               margin: 0;
@@ -59,7 +62,7 @@ export async function POST(request: NextRequest) {
             }
             
             body {
-              font-family: Helvetica, Arial, sans-serif;
+              font-family: "Roboto", Arial, sans-serif;
               font-size: 11pt;
               line-height: 1.5;
               color: #000000;
@@ -162,6 +165,20 @@ export async function POST(request: NextRequest) {
     `;
     
     await page.setContent(fullHTML, { waitUntil: "networkidle" });
+
+    // Ensure webfonts are fully loaded before generating the PDF.
+    await page.emulateMedia({ media: "print" });
+    await page.evaluate(async () => {
+      // `document.fonts` is widely supported in Chromium; if not, skip gracefully.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fonts = (document as any).fonts as FontFaceSet | undefined;
+      if (fonts?.ready) await fonts.ready;
+    });
+    await page.waitForFunction(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fonts = (document as any).fonts as FontFaceSet | undefined;
+      return !fonts || fonts.status === "loaded";
+    });
     
     // Generate PDF with proper settings
     const pdfBuffer = await page.pdf({
